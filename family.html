@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2025 by anonymous (http://jsbin.com/yeyihatevi/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+    <title>家人称呼朗读练习</title>
+    <style>
+        body {
+            background-color: #002b36; /* 黑板背景 */
+            color: #fff;
+            font-family: '楷体', cursive;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .word-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        #hanzi {
+            font-size: 4em;
+            margin: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #pinyin {
+            font-size: 2.5em;
+            color: #ffd700;
+            margin: 15px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #4CAF50;
+        }
+
+        #progress {
+            font-size: 1.5em;
+            color: #00ff00;
+            margin: 20px;
+        }
+
+        #result {
+            font-size: 2em;
+            color: #ff69b4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="progress"></div>
+        <div class="word-card">
+            <div id="pinyin"></div>
+            <div id="hanzi"></div>
+        </div>
+        <button id="startBtn">开始朗读</button>
+        <div id="result"></div>
+        <audio id="cheerAudio" src="https://actions.google.com/sounds/v1/crowds/female_cheer.ogg"></audio>
+    </div>
+
+    <script>
+        const words = [
+            { hanzi: '爸爸', pinyin: 'bà ba' },
+            { hanzi: '妈妈', pinyin: 'mā ma' },
+            { hanzi: '哥哥', pinyin: 'gē ge' },
+            { hanzi: '姐姐', pinyin: 'jiě jie' },
+            { hanzi: '弟弟', pinyin: 'dì di' },
+            { hanzi: '妹妹', pinyin: 'mèi mei' },
+            { hanzi: '家人', pinyin: 'jiā rén' },
+            { hanzi: '我', pinyin: 'wǒ' }
+        ];
+
+        let currentIndex = 0;
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'zh-CN';
+        recognition.interimResults = false;
+        recognition.continuous = false;
+
+        const elements = {
+            hanzi: document.getElementById('hanzi'),
+            pinyin: document.getElementById('pinyin'),
+            startBtn: document.getElementById('startBtn'),
+            result: document.getElementById('result'),
+            progress: document.getElementById('progress'),
+            cheerAudio: document.getElementById('cheerAudio')
+        };
+
+        function updateProgress() {
+            elements.progress.textContent = `${currentIndex + 1}/${words.length}`;
+        }
+
+        function showNextWord() {
+            if (currentIndex < words.length) {
+                elements.hanzi.textContent = words[currentIndex].hanzi;
+                elements.pinyin.textContent = words[currentIndex].pinyin;
+                updateProgress();
+            } else {
+                elements.hanzi.textContent = '';
+                elements.pinyin.textContent = '';
+                elements.startBtn.style.display = 'none';
+                elements.result.innerHTML = '🎉 全部正确！<br>你真棒！';
+                elements.result.style.display = 'block';
+                elements.cheerAudio.play();
+            }
+        }
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript.trim();
+            if (transcript === words[currentIndex].hanzi) {
+                currentIndex++;
+                showNextWord();
+            } else {
+                alert('读音不够准确，请再试一次！');
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error('识别错误:', event.error);
+        };
+
+        elements.startBtn.addEventListener('click', () => {
+            recognition.start();
+            elements.startBtn.textContent = '正在聆听...';
+            elements.startBtn.disabled = true;
+            setTimeout(() => {
+                elements.startBtn.textContent = '开始朗读';
+                elements.startBtn.disabled = false;
+            }, 2000);
+        });
+
+        recognition.onend = () => {
+            elements.startBtn.textContent = '开始朗读';
+            elements.startBtn.disabled = false;
+        };
+
+        // 初始化显示第一个词语
+        showNextWord();
+    </script>
+</body>
+</html>
